@@ -1,0 +1,14 @@
+[tasks.lint]
+run = "eldev -p -dtT lint"
+description = "Lint the project"
+
+[tasks.compile]
+run = "eldev -dtT compile -L --warnings-as-errors"
+description = "Byte-compile with warnings as errors"
+
+[tasks.test]
+run = "eldev -p -dtT test"
+description = "Run tests"
+
+[tools]
+"ubi:abhinav/git-spice" = { version = "latest", exe = "gs" }

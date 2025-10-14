@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    paths-ignore: ["**.md", "**.adoc"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs-version: ["29.4", "30.1", "snapshot"]
+
+    steps:
+      - name: Check out the source code
+        uses: actions/checkout@v6
+
+      - name: Set up Mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+          experimental: true
+          log_level: debug
+          install: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Emacs ${{ matrix.emacs-version }}
+        uses: jcs090218/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+
+      - name: Install Eldev
+        uses: emacs-eldev/setup-eldev@v1
+
+      - name: Cache .eldev directory
+        uses: actions/cache@v4
+        with:
+          path: .eldev
+          key: ${{ runner.os }}-eldev-${{ matrix.emacs-version }}-${{ hashFiles('git-spice.el', 'Eldev') }}
+          restore-keys: |
+            ${{ runner.os }}-eldev-${{ matrix.emacs-version }}-
+            ${{ runner.os }}-eldev-
+
+      - name: Install runtime dependencies
+        run: eldev -dtT prepare
+
+      - name: Lint the project
+        run: mise run lint
+
+      - name: Byte-compile with warnings as errors
+        run: mise run compile
+
+      - name: Run tests
+        run: mise run test
