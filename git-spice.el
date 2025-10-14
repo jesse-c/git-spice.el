@@ -50,7 +50,10 @@
   :prefix "git-spice-")
 
 (defun git-spice-insert-branch-tree (branch branches-by-name prefix is-last)
-  "Insert BRANCH and its children in tree format."
+  "Insert BRANCH and its children in tree format.
+BRANCHES-BY-NAME is a hash table of branch names to branch data.
+PREFIX is the tree indentation string.
+IS-LAST indicates if this is the last child in its parent."
   (let* ((name (alist-get 'name branch))
          (change (alist-get 'change branch))
          (pr-url (when change (alist-get 'url change)))
