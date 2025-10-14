@@ -1,3 +1,7 @@
-# Added automatically by ‘eldev init’.
+# Added automatically by 'eldev init'.
 /.eldev
 /Eldev-local
+
+# Auto-generated files
+*-autoloads.el
+*.elc

@@ -59,7 +59,6 @@ IS-LAST indicates if this is the last child in its parent."
          (pr-url (when change (alist-get 'url change)))
          (push-info (alist-get 'push branch))
          (needs-push (when push-info (> (or (alist-get 'ahead push-info) 0) 0)))
-         (down (alist-get 'down branch))
          (commits (alist-get 'commits branch))
          (ups (alist-get 'ups branch))
          (is-current (eq (alist-get 'current branch) t))
