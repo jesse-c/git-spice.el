@@ -5,7 +5,7 @@
 ;; Author: Jesse Claven <jesse.claven@gmail.com>
 ;; URL: https://github.com/jesse-c/git-spice.el
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "29.1") (magit "3.0.0") (transient "0.4.0"))
+;; Package-Requires: ((emacs "29.1") (magit "3.0.0"))
 ;; Keywords: vc, tools, git
 
 ;;; Commentary:
