@@ -180,23 +180,28 @@ IS-LAST indicates if this is the last child in its parent."
   (let* ((default-directory (magit-toplevel))
          (command-string (concat "gs " (mapconcat #'shell-quote-argument args " ")))
          (buffer (get-buffer-create "*gs*")))
+    (message "Running: %s" command-string)
     (with-current-buffer buffer
       (erase-buffer))
-    (let ((proc (apply #'start-process "gs" buffer "gs" args)))
-      (set-process-sentinel
-       proc
-       (lambda (proc event)
-         (let ((exit-status (process-exit-status proc)))
-           (cond
-            ((and (string-match-p "finished" event) (= exit-status 0))
-             (message "✓ gs %s succeeded" (mapconcat #'identity args " "))
-             (magit-refresh))
-            ((string-match-p "finished" event)
-             (message "✗ gs %s failed (exit %d)" (mapconcat #'identity args " ") exit-status)
-             (with-current-buffer (get-buffer "*gs*")
-               (display-buffer (current-buffer))))
-            (t
-             (message "gs %s: %s" (mapconcat #'identity args " ") (string-trim event))))))))))
+    (condition-case err
+        (let ((proc (apply #'start-process "gs" buffer "gs" args)))
+          (set-process-sentinel
+           proc
+           (lambda (proc event)
+             (let ((exit-status (process-exit-status proc)))
+               (cond
+                ((and (string-match-p "finished" event) (= exit-status 0))
+                 (message "✓ gs %s succeeded" (mapconcat #'identity args " "))
+                 (magit-refresh))
+                ((string-match-p "finished" event)
+                 (message "✗ gs %s failed (exit %d)" (mapconcat #'identity args " ") exit-status)
+                 (with-current-buffer (get-buffer "*gs*")
+                   (display-buffer (current-buffer))))
+                (t
+                 (message "gs %s: %s" (mapconcat #'identity args " ") (string-trim event))))))))
+      (error
+       (message "Failed to start gs process: %S" err)
+       (error "Failed to start gs process: %S" err)))))
 
 (defun git-spice-run-display (&rest args)
   "Run gs command with ARGS and display output."
