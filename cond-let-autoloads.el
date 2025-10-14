@@ -15,6 +15,7 @@
 Enable git-spice section in Magit status buffer." t)
  (autoload 'git-spice-menu "git-spice" nil t)
 (register-definition-prefixes "git-spice" '("git-spice-"))
+
 
 ;;; End of scraped data
 
