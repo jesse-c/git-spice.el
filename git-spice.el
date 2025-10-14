@@ -257,7 +257,7 @@ IS-LAST indicates if this is the last child in its parent."
    ("-a" "Abort" "--abort")]
   ["Actions"
    ("r" "Restack" (lambda () (interactive)
-                    (apply #'git-spice-run "branch" "restack" (git-spice-arguments 'git-spice-branch-restack-menu))))
+                    (apply #'git-spice-run "branch" "restack" (git-spice-arguments 'git-spice-branch-restack-menu))) :transient nil)
    ("q" "Quit" transient-quit-one)])
 
 (transient-define-prefix git-spice-stack-menu ()
@@ -267,9 +267,9 @@ IS-LAST indicates if this is the last child in its parent."
    ("-a" "Abort" "--abort")]
   ["Actions"
    ("s" "Submit" (lambda () (interactive)
-                   (apply #'git-spice-run "stack" "submit" (git-spice-arguments 'git-spice-stack-menu))))
+                   (apply #'git-spice-run "stack" "submit" (git-spice-arguments 'git-spice-stack-menu))) :transient nil)
    ("r" "Restack" (lambda () (interactive)
-                    (apply #'git-spice-run "stack" "restack" (git-spice-arguments 'git-spice-stack-menu))))
+                    (apply #'git-spice-run "stack" "restack" (git-spice-arguments 'git-spice-stack-menu))) :transient nil)
    ("q" "Quit" transient-quit-one)])
 
 ;;;###autoload (autoload 'git-spice-menu "git-spice" nil t)
