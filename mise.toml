@@ -7,7 +7,7 @@ run = "eldev -dtT compile -L --warnings-as-errors"
 description = "Byte-compile with warnings as errors"
 
 [tasks.test]
-run = "eldev -p -dtT test"
+run = "eldev -dtT test"
 description = "Run tests"
 
 [tools]
