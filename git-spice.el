@@ -81,11 +81,11 @@ IS-LAST indicates if this is the last child in its parent."
                                                'mouse-face 'highlight
                                                'keymap (let ((map (make-sparse-keymap)))
                                                          (define-key map (kbd "RET")
-                                                                     `(lambda () (interactive)
-                                                                        (browse-url ,pr-url)))
+                                                                     (lambda () (interactive)
+                                                                       (browse-url pr-url)))
                                                          (define-key map [mouse-1]
-                                                                     `(lambda () (interactive)
-                                                                        (browse-url ,pr-url)))
+                                                                     (lambda () (interactive)
+                                                                       (browse-url pr-url)))
                                                          map))
                                  "")
                                (if (string-empty-p status-flags)
@@ -100,9 +100,9 @@ IS-LAST indicates if this is the last child in its parent."
                               'mouse-face 'highlight
                               'keymap (let ((map (make-sparse-keymap)))
                                         (define-key map (kbd "RET")
-                                                    `(lambda () (interactive) (magit-checkout ,name)))
+                                                    (lambda () (interactive) (magit--checkout name)))
                                         (define-key map [mouse-1]
-                                                    `(lambda () (interactive) (magit-checkout ,name)))
+                                                    (lambda () (interactive) (magit--checkout name)))
                                         map))))))
 
     ;; Insert commits for this branch
