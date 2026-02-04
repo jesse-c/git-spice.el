@@ -249,7 +249,7 @@ IS-LAST indicates if this is the last child in its parent."
 (transient-define-prefix git-spice-branch-create-menu ()
   "Git Spice branch create menu."
   ["Arguments"
-   ("-n" "Don't create initial commit" "--no-commit")]
+   ("-n" "No commit" "--no-commit")]
   ["Actions"
    ("b" "Create branch" git-spice-branch-create)
    ("q" "Quit" transient-quit-one)])
@@ -264,9 +264,25 @@ IS-LAST indicates if this is the last child in its parent."
                     (apply #'git-spice-run "branch" "restack" (git-spice-arguments 'git-spice-branch-restack-menu))) :transient nil)
    ("q" "Quit" transient-quit-one)])
 
+(transient-define-prefix git-spice-branch-submit-menu ()
+  "Git Spice branch submit menu."
+  ["Arguments"
+   ("-d" "Draft" "--draft")
+   ("-f" "Auto-fill from commits" "--fill")
+   ("-u" "Update existing CRs only" "--update-only")
+   ("-n" "Dry run" "--dry-run")]
+  ["Actions"
+   ("s" "Submit" (lambda () (interactive)
+                   (apply #'git-spice-run "branch" "submit" (git-spice-arguments 'git-spice-branch-submit-menu))) :transient nil)
+   ("q" "Quit" transient-quit-one)])
+
 (transient-define-prefix git-spice-stack-menu ()
   "Git Spice stack operations menu."
   ["Arguments"
+   ("-d" "Draft" "--draft")
+   ("-f" "Auto-fill from commits" "--fill")
+   ("-u" "Update existing CRs only" "--update-only")
+   ("-n" "Dry run" "--dry-run")
    ("-c" "Continue" "--continue")
    ("-a" "Abort" "--abort")]
   ["Actions"
@@ -290,19 +306,17 @@ IS-LAST indicates if this is the last child in its parent."
     ("m" "Rename" (lambda () (interactive)
                     (let ((new-name (read-string "New branch name: ")))
                       (git-spice-run "branch" "rename" new-name))) :transient nil)
-    ("r" "Restack›" git-spice-branch-restack-menu)]]
+    ("r" "Restack›" git-spice-branch-restack-menu)
+    ("s" "Submit›" git-spice-branch-submit-menu)]]
   [["Stack"
     ("s" "Stack ops›" git-spice-stack-menu)
-    ("e" "Edit" (lambda () (interactive) (git-spice-run "stack" "edit")) :transient nil)
-    ("d" "Delete" (lambda () (interactive) (git-spice-run "stack" "delete")) :transient nil)]
+    ("d" "Delete" (lambda () (interactive) (git-spice-run "stack" "delete" "--force")) :transient nil)]
    ["Upstack"
-    ("u" "Submit" (lambda () (interactive) (git-spice-run "upstack" "submit")) :transient nil)
+    ("u" "Submit" (lambda () (interactive) (git-spice-run "upstack" "submit" "--fill")) :transient nil)
     ("i" "Restack" (lambda () (interactive) (git-spice-run "upstack" "restack")) :transient nil)
-    ("O" "Move onto" (lambda () (interactive) (git-spice-run "upstack" "onto")) :transient nil)
-    ("D" "Delete" (lambda () (interactive) (git-spice-run "upstack" "delete")) :transient nil)]
+    ("D" "Delete" (lambda () (interactive) (git-spice-run "upstack" "delete" "--force")) :transient nil)]
    ["Downstack"
-    ("w" "Submit" (lambda () (interactive) (git-spice-run "downstack" "submit")) :transient nil)
-    ("E" "Edit" (lambda () (interactive) (git-spice-run "downstack" "edit")) :transient nil)]]
+    ("w" "Submit" (lambda () (interactive) (git-spice-run "downstack" "submit" "--fill")) :transient nil)]]
   [["Commit"
     ("c" "Create" (lambda () (interactive) (git-spice-run "commit" "create")) :transient nil)
     ("a" "Amend" (lambda () (interactive) (git-spice-run "commit" "amend")) :transient nil)
