@@ -10,5 +10,13 @@ description = "Byte-compile with warnings as errors"
 run = "eldev -dtT test"
 description = "Run tests"
 
+[tasks.test-unit]
+run = "eldev -dtT test test/git-spice-test.el"
+description = "Run unit tests only"
+
+[tasks.test-integration]
+run = "eldev -dtT test test/git-spice-integration-test.el"
+description = "Run integration tests (requires gs binary)"
+
 [tools]
 "ubi:abhinav/git-spice" = { version = "latest", exe = "gs" }
