@@ -1,0 +1,55 @@
+steps:
+  - label: "Install Mise"
+    key: "install-mise"
+    secrets:
+      - "GITHUB_TOKEN"
+    command: |
+      curl https://mise.run | sh
+      /root/.local/bin/mise install
+
+  - label: "Install Emacs"
+    key: "install-emacs"
+    command: |
+      sudo apt update
+      {
+        echo "postfix postfix/main_mailer_type select 'No configuration'"
+        echo "postfix postfix/mailname string localhost"
+      } | sudo debconf-set-selections
+      sudo sed -i 's/^# deb-src/deb-src/' /etc/apt/sources.list 2>/dev/null || \
+      sudo sed -i 's/# Types: deb-src/Types: deb-src/' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+      sudo apt update
+      sudo apt build-dep -y emacs
+      sudo apt install -y libtree-sitter-dev
+      git clone --depth 1 --branch emacs-30 git://git.savannah.gnu.org/emacs.git
+      cd emacs
+      ./autogen.sh
+      ./configure --without-x --without-mailutils --without-libsystemd --with-tree-sitter --with-json
+      make -j4 bootstrap
+      ./src/emacs --version
+      sudo make install
+
+  - label: "Install Eldev"
+    key: "install-eldev"
+    depends_on: "install-emacs"
+    command: curl -fsSL https://raw.github.com/emacs-eldev/eldev/master/webinstall/eldev | sh
+
+  - label: "Lint"
+    key: "lint"
+    depends_on:
+      - "install-eldev"
+      - "install-mise"
+    command: /root/.local/bin/mise run lint
+
+  - label: "Compile"
+    key: "compile"
+    depends_on:
+      - "install-eldev"
+      - "install-mise"
+    command: /root/.local/bin/mise run compile
+
+  - label: "Test"
+    key: "test"
+    depends_on:
+      - "lint"
+      - "compile"
+    command: /root/.local/bin/mise run test
