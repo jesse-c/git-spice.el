@@ -25,30 +25,7 @@ Thank you to [Abhinav Gupta](https://github.com/abhinav) for creating [git-spice
   (git-spice-setup-magit-section))
 ```
 
-## Testing
-
-This project uses [Eldev](https://github.com/doublep/eldev) for testing and [Mise](https://mise.jdx.dev/) for task management.
-
-### Running Tests
-
-Run all tests (unit tests + integration tests):
-```bash
-mise run test
-```
-
-Run only unit tests:
-```bash
-mise run test-unit
-```
-
-Run only integration tests (requires the `gs` binary):
-```bash
-mise run test-integration
-```
-
-> **Note:** Integration tests require the [git-spice (`gs`) binary](https://github.com/abhinav/git-spice) to be installed. Tests will be skipped automatically if `gs` is not available.
-
-### Development Setup
+## Development
 
 ```bash
 # Install mise
@@ -62,4 +39,19 @@ mise run lint
 
 # Byte-compile
 mise run compile
+```
+
+Run all tests (unit tests + integration tests):
+```bash
+mise run test
+```
+
+Run only unit tests:
+```bash
+mise run test-unit
+```
+
+Run only integration tests:
+```bash
+mise run test-integration
 ```
