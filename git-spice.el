@@ -141,23 +141,28 @@ IS-LAST indicates if this is the last child in its parent."
              (output (shell-command-to-string command))
              (lines (split-string output "\n" t))
              (branches-by-name (make-hash-table :test 'equal))
-             (root-branch nil))
+             (root-branch nil)
+             (log-lines nil))
         (condition-case err
             (progn
-              ;; Parse each line as separate JSON object
+              ;; Parse each line as separate JSON object, skipping non-JSON lines
+              ;; (gs may emit INF/WRN/FTL log lines before JSON output)
               (dolist (line lines)
-                (let ((branch (json-parse-string line :object-type 'alist :array-type 'list)))
-                  (let ((name (alist-get 'name branch))
-                        (down (alist-get 'down branch)))
-                    (puthash name branch branches-by-name)
-                    ;; Root branch is one without 'down'
-                    (unless down
-                      (setq root-branch branch)))))
+                (if (string-prefix-p "{" line)
+                    (let ((branch (json-parse-string line :object-type 'alist :array-type 'list)))
+                      (let ((name (alist-get 'name branch))
+                            (down (alist-get 'down branch)))
+                        (puthash name branch branches-by-name)
+                        (unless down
+                          (setq root-branch branch))))
+                  (push line log-lines)))
               
               ;; Build and display tree starting from root
               (if root-branch
                   (git-spice-insert-branch-tree root-branch branches-by-name "" t)
-                (insert (propertize "No git-spice branches found\n" 'face 'magit-dimmed))))
+                (let* ((fatal (cl-find-if (lambda (l) (string-prefix-p "FTL " l)) log-lines))
+                       (msg (if fatal (substring fatal 4) "No git-spice branches found")))
+                  (insert (propertize (concat msg "\n") 'face 'magit-dimmed)))))
           (error
            (message "Failed to parse git-spice output: %S" err)
            (insert (propertize "Failed to parse git-spice output\n" 'face 'magit-dimmed))))))))

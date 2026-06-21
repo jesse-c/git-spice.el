@@ -59,6 +59,27 @@
       ;; Buffer should contain something (header was inserted)
       (should (> (length (buffer-string)) 0)))))
 
+(ert-deftest git-spice-test-section-skips-inf-log-lines ()
+  "Test that INF/WRN/ERR log lines from gs do not cause a JSON parse error."
+  (with-temp-buffer
+    (magit-section-mode)
+    (let ((inhibit-read-only t)
+          (error-seen nil))
+      (cl-letf (((symbol-function 'magit-toplevel)
+                 (lambda () "/tmp/test-repo"))
+                ((symbol-function 'shell-command-to-string)
+                 (lambda (_)
+                   (concat "INF Repository not initialized. Initializing.\n"
+                           "INF Using remote: origin\n"
+                           "INF Initialized repository  trunk=main\n"
+                           "{\"name\":\"main\",\"current\":true}\n")))
+                ((symbol-function 'message)
+                 (lambda (fmt &rest args)
+                   (when (string-match-p "Failed to parse" fmt)
+                     (setq error-seen t)))))
+        (git-spice-magit-insert-section)
+        (should-not error-seen)))))
+
 ;;; Command Tests (require git-spice)
 
 (ert-deftest git-spice-test-run-command-success ()
