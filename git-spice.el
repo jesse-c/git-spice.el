@@ -49,6 +49,13 @@
   :group 'magit-extensions
   :prefix "git-spice-")
 
+(defcustom git-spice-executable "gs"
+  "Name or path of the git-spice executable.
+Set this to \"git-spice\" if installed via mise or another package
+manager that uses the release binary name rather than the go binary name."
+  :type 'string
+  :group 'git-spice)
+
 (defun git-spice-insert-branch-tree (branch branches-by-name prefix is-last)
   "Insert BRANCH and its children in tree format.
 BRANCHES-BY-NAME is a hash table of branch names to branch data.
@@ -137,7 +144,7 @@ IS-LAST indicates if this is the last child in its parent."
     (magit-insert-heading "Stacks")
     (magit-insert-section-body
       (let* ((current-repo (magit-toplevel))
-             (command (format "gs -C %s log long --all --json" current-repo))
+             (command (format "%s -C %s log long --all --json" git-spice-executable current-repo))
              (output (shell-command-to-string command))
              (lines (split-string output "\n" t))
              (branches-by-name (make-hash-table :test 'equal))
@@ -182,13 +189,13 @@ IS-LAST indicates if this is the last child in its parent."
 (defun git-spice-run (&rest args)
   "Run gs command with ARGS and refresh magit."
   (let* ((default-directory (magit-toplevel))
-         (command-string (concat "gs " (mapconcat #'shell-quote-argument args " ")))
+         (command-string (concat git-spice-executable " " (mapconcat #'shell-quote-argument args " ")))
          (buffer (get-buffer-create "*gs*")))
     (message "Running: %s" command-string)
     (with-current-buffer buffer
       (erase-buffer))
     (condition-case err
-        (let ((proc (apply #'start-process "gs" buffer "gs" args)))
+        (let ((proc (apply #'start-process "gs" buffer git-spice-executable args)))
           (set-process-sentinel
            proc
            (lambda (proc event)
@@ -210,7 +217,7 @@ IS-LAST indicates if this is the last child in its parent."
 (defun git-spice-run-display (&rest args)
   "Run gs command with ARGS and display output."
   (let ((default-directory (magit-toplevel)))
-    (async-shell-command (concat "gs " (mapconcat #'identity args " ")))))
+    (async-shell-command (concat git-spice-executable " " (mapconcat #'identity args " ")))))
 
 (defun git-spice-arguments (&optional prompt)
   "Get transient arguments for current command, optionally with PROMPT."
