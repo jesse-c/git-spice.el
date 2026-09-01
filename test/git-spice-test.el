@@ -149,25 +149,55 @@
 
 ;;; Transient Menu Tests
 
-(ert-deftest git-spice-test-stack-menu-definition ()
-  "Test that stack menu actions have correct :transient settings.
-This ensures actions exit the menu so users can see feedback."
-  ;; Read the source file to verify :transient nil is present
-  (with-temp-buffer
-    (insert-file-contents (locate-library "git-spice.el"))
-    (goto-char (point-min))
-    ;; Find the git-spice-stack-menu definition
-    (should (search-forward "(transient-define-prefix git-spice-stack-menu ()" nil t))
-    ;; Find the Submit action and verify :transient nil
-    (should (search-forward "\"Submit\"" nil t))
-    (let ((search-end (+ (point) 200)))
-      (should (search-forward ":transient nil" search-end t)))
-    ;; Go back and find Restack action
-    (goto-char (point-min))
-    (search-forward "(transient-define-prefix git-spice-stack-menu ()" nil t)
-    (search-forward "\"Restack\"" nil t)
-    (let ((search-end (+ (point) 200)))
-      (should (search-forward ":transient nil" search-end t)))))
+(ert-deftest git-spice-test-force-enabled-menus ()
+  "Test that commands supporting optional force expose it."
+  (dolist (menu '(git-spice-branch-delete-menu
+                  git-spice-branch-submit-menu
+                  git-spice-stack-submit-menu
+                  git-spice-upstack-submit-menu
+                  git-spice-downstack-submit-menu))
+    (should (transient-get-suffix menu "-F"))))
+
+(ert-deftest git-spice-test-force-arguments-forwarded ()
+  "Test that force arguments are forwarded to the corresponding command."
+  (dolist (test-case '((git-spice-branch-delete
+                        git-spice-branch-delete-menu
+                        ("branch" "delete" "--force"))
+                       (git-spice-branch-submit
+                        git-spice-branch-submit-menu
+                        ("branch" "submit" "--force"))
+                       (git-spice-stack-submit
+                        git-spice-stack-submit-menu
+                        ("stack" "submit" "--force"))
+                       (git-spice-upstack-submit
+                        git-spice-upstack-submit-menu
+                        ("upstack" "submit" "--fill" "--force"))
+                       (git-spice-downstack-submit
+                        git-spice-downstack-submit-menu
+                        ("downstack" "submit" "--fill" "--force"))))
+    (pcase-let ((`(,command ,menu ,expected-args) test-case)
+                (captured-args nil))
+      (cl-letf (((symbol-function 'git-spice-run)
+                 (lambda (&rest args) (setq captured-args args)))
+                ((symbol-function 'transient-args)
+                 (lambda (prefix)
+                   (should (eq prefix menu))
+                   '("--force"))))
+        (funcall command)
+        (should (equal captured-args expected-args))))))
+
+(ert-deftest git-spice-test-stack-restack-arguments-forwarded ()
+  "Test that stack restack uses only its dedicated transient arguments."
+  (let ((captured-args nil))
+    (cl-letf (((symbol-function 'git-spice-run)
+               (lambda (&rest args) (setq captured-args args)))
+              ((symbol-function 'transient-args)
+               (lambda (prefix)
+                 (should (eq prefix 'git-spice-stack-restack-menu))
+                 '("--continue"))))
+      (git-spice-stack-restack)
+      (should (equal captured-args
+                     '("stack" "restack" "--continue"))))))
 
 (ert-deftest git-spice-test-branch-restack-menu-definition ()
   "Test that branch restack menu action has correct :transient setting.

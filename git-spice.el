@@ -239,6 +239,42 @@ IS-LAST indicates if this is the last child in its parent."
   (let ((branch (magit-read-branch "Checkout branch")))
     (git-spice-run "branch" "checkout" branch)))
 
+(defun git-spice-branch-delete ()
+  "Delete the current branch using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "branch" "delete"
+         (git-spice-arguments 'git-spice-branch-delete-menu)))
+
+(defun git-spice-branch-submit ()
+  "Submit the current branch using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "branch" "submit"
+         (git-spice-arguments 'git-spice-branch-submit-menu)))
+
+(defun git-spice-stack-submit ()
+  "Submit the current stack using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "stack" "submit"
+         (git-spice-arguments 'git-spice-stack-submit-menu)))
+
+(defun git-spice-stack-restack ()
+  "Restack the current stack using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "stack" "restack"
+         (git-spice-arguments 'git-spice-stack-restack-menu)))
+
+(defun git-spice-upstack-submit ()
+  "Submit the current branch and its upstack using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "upstack" "submit" "--fill"
+         (git-spice-arguments 'git-spice-upstack-submit-menu)))
+
+(defun git-spice-downstack-submit ()
+  "Submit the current branch and its downstack using transient arguments."
+  (interactive)
+  (apply #'git-spice-run "downstack" "submit" "--fill"
+         (git-spice-arguments 'git-spice-downstack-submit-menu)))
+
 (defun git-spice-log-short ()
   "Show short log."
   (interactive)
@@ -276,32 +312,61 @@ IS-LAST indicates if this is the last child in its parent."
                     (apply #'git-spice-run "branch" "restack" (git-spice-arguments 'git-spice-branch-restack-menu))) :transient nil)
    ("q" "Quit" transient-quit-one)])
 
+(transient-define-prefix git-spice-branch-delete-menu ()
+  "Git Spice branch delete menu."
+  ["Arguments"
+   ("-F" "Force deletion" "--force")]
+  ["Actions"
+   ("x" "Delete" git-spice-branch-delete :transient nil)
+   ("q" "Quit" transient-quit-one)])
+
 (transient-define-prefix git-spice-branch-submit-menu ()
   "Git Spice branch submit menu."
   ["Arguments"
    ("-d" "Draft" "--draft")
    ("-f" "Auto-fill from commits" "--fill")
    ("-u" "Update existing CRs only" "--update-only")
-   ("-n" "Dry run" "--dry-run")]
+   ("-n" "Dry run" "--dry-run")
+   ("-F" "Force push" "--force")]
   ["Actions"
-   ("s" "Submit" (lambda () (interactive)
-                   (apply #'git-spice-run "branch" "submit" (git-spice-arguments 'git-spice-branch-submit-menu))) :transient nil)
+   ("s" "Submit" git-spice-branch-submit :transient nil)
    ("q" "Quit" transient-quit-one)])
 
-(transient-define-prefix git-spice-stack-menu ()
-  "Git Spice stack operations menu."
+(transient-define-prefix git-spice-stack-submit-menu ()
+  "Git Spice stack submit menu."
   ["Arguments"
    ("-d" "Draft" "--draft")
    ("-f" "Auto-fill from commits" "--fill")
    ("-u" "Update existing CRs only" "--update-only")
    ("-n" "Dry run" "--dry-run")
+   ("-F" "Force push" "--force")]
+  ["Actions"
+   ("s" "Submit" git-spice-stack-submit :transient nil)
+   ("q" "Quit" transient-quit-one)])
+
+(transient-define-prefix git-spice-stack-restack-menu ()
+  "Git Spice stack restack menu."
+  ["Arguments"
    ("-c" "Continue" "--continue")
    ("-a" "Abort" "--abort")]
   ["Actions"
-   ("s" "Submit" (lambda () (interactive)
-                   (apply #'git-spice-run "stack" "submit" (git-spice-arguments 'git-spice-stack-menu))) :transient nil)
-   ("r" "Restack" (lambda () (interactive)
-                    (apply #'git-spice-run "stack" "restack" (git-spice-arguments 'git-spice-stack-menu))) :transient nil)
+   ("r" "Restack" git-spice-stack-restack :transient nil)
+   ("q" "Quit" transient-quit-one)])
+
+(transient-define-prefix git-spice-upstack-submit-menu ()
+  "Git Spice upstack submit menu."
+  ["Arguments"
+   ("-F" "Force push" "--force")]
+  ["Actions"
+   ("u" "Submit" git-spice-upstack-submit :transient nil)
+   ("q" "Quit" transient-quit-one)])
+
+(transient-define-prefix git-spice-downstack-submit-menu ()
+  "Git Spice downstack submit menu."
+  ["Arguments"
+   ("-F" "Force push" "--force")]
+  ["Actions"
+   ("w" "Submit" git-spice-downstack-submit :transient nil)
    ("q" "Quit" transient-quit-one)])
 
 ;;;###autoload (autoload 'git-spice-menu "git-spice" nil t)
@@ -314,21 +379,22 @@ IS-LAST indicates if this is the last child in its parent."
     ("o" "Checkout" git-spice-branch-checkout :transient nil)
     ("t" "Track" (lambda () (interactive) (git-spice-run "branch" "track")) :transient nil)
     ("U" "Untrack" (lambda () (interactive) (git-spice-run "branch" "untrack")) :transient nil)
-    ("x" "Delete" (lambda () (interactive) (git-spice-run "branch" "delete")) :transient nil)
+    ("x" "Delete›" git-spice-branch-delete-menu)
     ("m" "Rename" (lambda () (interactive)
                     (let ((new-name (read-string "New branch name: ")))
                       (git-spice-run "branch" "rename" new-name))) :transient nil)
     ("r" "Restack›" git-spice-branch-restack-menu)
     ("s" "Submit›" git-spice-branch-submit-menu)]]
   [["Stack"
-    ("s" "Stack ops›" git-spice-stack-menu)
+    ("s" "Submit›" git-spice-stack-submit-menu)
+    ("r" "Restack›" git-spice-stack-restack-menu)
     ("d" "Delete" (lambda () (interactive) (git-spice-run "stack" "delete" "--force")) :transient nil)]
    ["Upstack"
-    ("u" "Submit" (lambda () (interactive) (git-spice-run "upstack" "submit" "--fill")) :transient nil)
+    ("u" "Submit›" git-spice-upstack-submit-menu)
     ("i" "Restack" (lambda () (interactive) (git-spice-run "upstack" "restack")) :transient nil)
     ("D" "Delete" (lambda () (interactive) (git-spice-run "upstack" "delete" "--force")) :transient nil)]
    ["Downstack"
-    ("w" "Submit" (lambda () (interactive) (git-spice-run "downstack" "submit" "--fill")) :transient nil)]]
+    ("w" "Submit›" git-spice-downstack-submit-menu)]]
   [["Commit"
     ("c" "Create" (lambda () (interactive) (git-spice-run "commit" "create")) :transient nil)
     ("a" "Amend" (lambda () (interactive) (git-spice-run "commit" "amend")) :transient nil)
